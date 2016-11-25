@@ -3,8 +3,8 @@
 ;; Author: Hirotaka Niitsuma <hirotaka.niitsuma@gmail.com>
 ;; URL: https://github.com/niitsuma/edit-indirect-region-latex
 ;; Package-Version: 20161125.1740
-;; Version: 0.0.1
-;; Package-Requires: ((emacs "24.3"))
+;; Version: 0.0.2
+;; Package-Requires: ((emacs "24.3") (ht "2.2") (edit-indirect "0.1.4") )
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -97,7 +97,7 @@
 ;;; Code:
 ;;; edit-indirect-region-latex.el
 
-(require 'ht) 
+(require 'ht)
 (require 'edit-indirect)
 
 (defgroup edit-indirect-region-latex nil
@@ -107,6 +107,11 @@
 (defcustom edit-indirect-region-latex-after-creation-functions nil
   "Functions called after an edit-indirect-latex buffer has been committed."
   :type 'hook
+  :group 'edit-indirect-region-latex )
+
+(defcustom edit-indirect-region-latex-ht (ht-create)
+  "Translation table [number] to latex special expressions."
+  :type 'hash-table
   :group 'edit-indirect-region-latex )
 
 
@@ -162,7 +167,7 @@ When current buffer contain the pattarn, the pattarn is scored in the translate 
   (when (or (not (boundp 'edit-indirect-region-latex-ht))
             (not (ht? edit-indirect-region-latex-ht)) )
     (setq edit-indirect-region-latex-ht (ht-create)))
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (while (re-search-forward "[\[0-9\]+]" nil t)
     (let ((key (buffer-substring-no-properties (match-beginning 0) (match-end 0) )))
       (edit-indirect-region-latex-ht-resister key key))))
@@ -176,17 +181,17 @@ The translated relations are stored in the translate dictionary:`edit-indirect-r
   (when (or (not (boundp 'edit-indirect-region-latex-ht))
             (not (ht? edit-indirect-region-latex-ht)) )
     (setq edit-indirect-region-latex-ht (ht-create)))
-  (beginning-of-buffer)
+  (goto-char (point-min))
   
   (ht-each
    (lambda (key value)
-     (beginning-of-buffer)
+     (goto-char (point-min))
      (while (search-forward value nil t) (replace-match key)) )
    edit-indirect-region-latex-ht)
      
   (mapcar
    (lambda (pat)
-     (beginning-of-buffer)
+     (goto-char (point-min))
      (while (re-search-forward pat nil t)
        (let ((key (edit-indirect-region-latex-ht-resister
 		   (buffer-substring-no-properties (match-beginning 0) (match-end 0)))))
@@ -200,15 +205,11 @@ The translated relations are stored in the translate dictionary:`edit-indirect-r
 
 (defun edit-indirect-region-latex-after-commit (beg end)
   "Back the tranlated the Latex special expressions in region BEG to END."
-  (dotimes (number 3 value)
-        (setq value number)
-        (mapcar
-         (lambda (key)
-           (beginning-of-buffer)
-           (while (search-forward key nil  t)
-             (replace-match (ht-get edit-indirect-region-latex-ht key) 'fixed-case 'literal)  ))
-         (ht-keys edit-indirect-region-latex-ht)   ))  )
-
+  (dotimes (number 3)
+    (dolist (key (ht-keys edit-indirect-region-latex-ht))
+      (goto-char (point-min))
+      (while (search-forward key nil t)
+	 (replace-match (ht-get edit-indirect-region-latex-ht key) 'fixed-case 'literal) ))  ))
 
 (defun edit-indirect-region-wrap-latex (s e o)
   "Wrap original `edit-indirect-region' ( S E O ) with initialization for the translate dictionary:`edit-indirect-region-latex-ht'."
@@ -217,13 +218,15 @@ The translated relations are stored in the translate dictionary:`edit-indirect-r
   (setq edit-indirect-after-commit-functions (list  #'edit-indirect-region-latex-after-commit))
   (edit-indirect-region s e o)   )
 
-
 (defun edit-indirect-latex (s e)
   "Edit the region S to E in a separate buffer.
 When no region selected, automaticaly select region around current point.
 Then the region pass to `edit-indirect-region-wrap-latex' ."
   (interactive "r")
-  (let ((pt (point)))
+  (let ((pt (point))
+	(region-start)
+	(region-end)
+	)
     (cond ((region-active-p)
            (edit-indirect-region-wrap-latex s e t)
            )
@@ -239,7 +242,6 @@ Then the region pass to `edit-indirect-region-wrap-latex' ."
            (edit-indirect-region-wrap-latex region-start region-end t)
            )
           (t (user-error "No region")))))
-
 
   
 (defun edit-indirect-region-latex (beg end &optional display-buffer)
