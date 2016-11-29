@@ -3,7 +3,7 @@
 ;; Author: Hirotaka Niitsuma <hirotaka.niitsuma@gmail.com>
 ;; URL: https://github.com/niitsuma/edit-indirect-region-latex
 ;; Package-Version: 20161125.1740
-;; Version: 0.0.2
+;; Version: 0.0.3
 ;; Package-Requires: ((emacs "24.3") (ht "2.2") (edit-indirect "0.1.4") )
 
 ;; This file is NOT part of GNU Emacs.
@@ -217,6 +217,7 @@ The translated relations are stored in the translate dictionary:`edit-indirect-r
   (setq edit-indirect-after-commit-functions (list  #'edit-indirect-region-latex-after-commit))
   (edit-indirect-region s e o)   )
 
+;;;###autoload
 (defun edit-indirect-latex (s e)
   "Edit the region S to E in a separate buffer.
 When no region selected, automaticaly select region around current point.
@@ -242,7 +243,7 @@ Then the region pass to `edit-indirect-region-wrap-latex' ."
            )
           (t (user-error "No region")))))
 
-  
+;;;###autoload
 (defun edit-indirect-region-latex (beg end &optional display-buffer)
   "Edit the region BEG to END in a separate buffer.
 The arguments pass to `edit-indirect-region' (BEG END DISPLAY-BUFFER).
