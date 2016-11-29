@@ -1,4 +1,4 @@
-;;; edit-indirect-region-latex.el --- Edit regions of latex in separate buffers especially for english grammar cheker.
+;;; edit-indirect-region-latex.el --- Edit LaTeX regions in separate buffers, e.g. for English grammar checks
 
 ;; Author: Hirotaka Niitsuma <hirotaka.niitsuma@gmail.com>
 ;; URL: https://github.com/niitsuma/edit-indirect-region-latex
@@ -95,7 +95,6 @@
 ;;
 
 ;;; Code:
-;;; edit-indirect-region-latex.el
 
 (require 'ht)
 (require 'edit-indirect)
@@ -131,7 +130,7 @@
 
 
 (defun edit-indirect-region-latex-ht-gen-key (table)  
-  "Generate new identilcal key which does not contain TABLE ."
+  "Generate new identical key which does not contain TABLE ."
   (let* ((keynum (+ 100 (random 899)))
          (key (concat "[" (number-to-string keynum) "]")))
     (if (ht-get table key)
